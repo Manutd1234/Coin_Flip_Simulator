@@ -1,0 +1,94 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Coin Flip Simulator</title>
+    <link rel="stylesheet" href="/styles.css" />
+  </head>
+  <body>
+    <main class="app-shell">
+      <header class="topbar">
+        <div>
+          <p class="eyebrow">Probability Lab</p>
+          <h1>Coin Flip Simulator</h1>
+          <p class="lede">Explore how simulation, the central limit theorem, and exact probability agree.</p>
+        </div>
+        <div class="status-pill"><span class="pulse"></span>Local simulation ready</div>
+      </header>
+
+      <section class="control-row" aria-label="Simulation controls">
+        <label>
+          Flips per experiment
+          <input id="coin-flips" type="number" min="100" max="50000" step="100" value="10000" />
+        </label>
+        <label>
+          Monte Carlo experiments
+          <input id="coin-experiments" type="number" min="1000" max="30000" step="1000" value="12000" />
+        </label>
+        <label>
+          Heads threshold
+          <input id="coin-threshold" type="number" min="0" max="50000" step="1" value="5200" />
+        </label>
+        <button class="primary-button" id="coin-run" type="button">Run simulation</button>
+      </section>
+
+      <section class="metric-grid" id="coin-metrics" aria-live="polite"></section>
+
+      <section class="grid two">
+        <article class="panel">
+          <div class="panel-heading">
+            <div>
+              <h2>One Flip Run</h2>
+              <p>Observed heads and tails from the latest experiment.</p>
+            </div>
+          </div>
+          <svg class="chart tall" id="coin-outcome-chart" role="img" aria-label="Heads and tails from one coin flip run"></svg>
+        </article>
+
+        <article class="panel">
+          <div class="panel-heading">
+            <div>
+              <h2>Exact Binomial + CLT</h2>
+              <p>The exact tail is the reference value; the CLT is an approximation.</p>
+            </div>
+          </div>
+          <div id="coin-formula"></div>
+        </article>
+      </section>
+
+      <section class="grid two">
+        <article class="panel">
+          <div class="panel-heading">
+            <div>
+              <h2>Distribution of Heads</h2>
+              <p>Heads counts across repeated experiments, with the threshold marked.</p>
+            </div>
+          </div>
+          <svg class="chart tall" id="coin-distribution-chart" role="img" aria-label="Distribution of heads across simulated experiments"></svg>
+        </article>
+
+        <article class="panel">
+          <div class="panel-heading">
+            <div>
+              <h2>Probability Comparison</h2>
+              <p>Exact probability, CLT approximation, and Monte Carlo estimate.</p>
+            </div>
+          </div>
+          <svg class="chart tall" id="coin-comparison-chart" role="img" aria-label="Exact probability compared with CLT and simulation"></svg>
+        </article>
+      </section>
+
+      <section class="panel">
+        <div class="panel-heading">
+          <div>
+            <h2>Experiment Readout</h2>
+            <p>Compare the simulated distribution with its theoretical mean and spread.</p>
+          </div>
+        </div>
+        <div class="readout-grid" id="coin-readout"></div>
+      </section>
+    </main>
+    <script src="/app.js"></script>
+  </body>
+</html>
