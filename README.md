@@ -1,12 +1,12 @@
 # Football Analytics Lab
 
-The dashboard now includes a third `Coin Flip Lab` project. It simulates a 10,000-flip experiment, builds a repeated-experiment distribution, calculates the probability of exceeding 5,200 heads with a continuity-corrected central limit theorem approximation, and compares that result with Monte Carlo simulation.
+The dashboard now includes a third `Coin Flip Lab` project. It simulates a 10,000-flip experiment, builds a repeated-experiment distribution, calculates the exact binomial probability of exceeding 5,200 heads to 15 decimal places, compares it with a continuity-corrected central limit theorem approximation, and verifies it with Monte Carlo simulation.
 
 This is a three-tab local dashboard for the football projects plus a probability and simulation lab:
 
 - **Player Performance**: Transfermarkt-style player profile, per-90 metrics, KMeans-style playing-style clusters, comparison charts, and a player table.
 - **World Cup Sentiment**: X/Twitter query input, Hugging Face Transformers sentiment path, event annotations, post volume, and a likes-versus-time scatter plot.
-- **Coin Flip Lab**: 10,000-flip simulation, repeated-trial distribution, continuity-corrected CLT tail probability, Monte Carlo comparison, and a 95% uncertainty interval for rare-event estimates.
+- **Coin Flip Lab**: 10,000-flip simulation, exact binomial tail probability, continuity-corrected CLT comparison, Monte Carlo verification, and a 95% uncertainty interval for rare-event estimates.
 
 The app runs immediately with demo data. When credentials and packages are available, it switches into real API/model paths.
 

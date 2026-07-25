@@ -681,6 +681,25 @@ def most_common(values: list[str]) -> str:
     return max(set(values), key=values.count)
 
 
+def exact_binomial_tail(flips: int, threshold: int) -> float:
+    """Compute P(X > threshold) for X ~ Binomial(flips, 0.5)."""
+    first_success = threshold + 1
+    if first_success > flips:
+        return 0.0
+    log_probability = (
+        math.lgamma(flips + 1)
+        - math.lgamma(first_success + 1)
+        - math.lgamma(flips - first_success + 1)
+        - flips * math.log(2)
+    )
+    probability = math.exp(log_probability)
+    tail = probability
+    for heads in range(first_success, flips):
+        probability *= (flips - heads) / (heads + 1)
+        tail += probability
+    return tail
+
+
 def coin_flip_payload(flips: int = 10000, experiments: int = 12000, threshold: int = 5200, seed: int | None = None) -> dict:
     """Return one flip run plus a Monte Carlo distribution for the CLT comparison."""
     flips = max(100, min(flips, 50000))
@@ -701,6 +720,7 @@ def coin_flip_payload(flips: int = 10000, experiments: int = 12000, threshold: i
     mean = flips * 0.5
     standard_deviation = math.sqrt(flips * 0.5 * 0.5)
     continuity_z = ((threshold + 0.5) - mean) / standard_deviation
+    exact_probability = exact_binomial_tail(flips, threshold)
     clt_probability = 0.5 * math.erfc(continuity_z / math.sqrt(2))
     simulation_probability = successes / experiments
     interval_z = 1.96
@@ -730,8 +750,10 @@ def coin_flip_payload(flips: int = 10000, experiments: int = 12000, threshold: i
         "single_tails": flips - single_heads,
         "simulation_successes": successes,
         "simulation_probability": round(simulation_probability, 8),
-        "clt_probability": round(clt_probability, 8),
-        "expected_successes": round(experiments * clt_probability, 2),
+        "exact_probability": round(exact_probability, 15),
+        "clt_probability": round(clt_probability, 15),
+        "clt_absolute_error": round(abs(clt_probability - exact_probability), 15),
+        "expected_successes": round(experiments * exact_probability, 2),
         "simulation_se": round(math.sqrt(simulation_probability * (1 - simulation_probability) / experiments), 8),
         "simulation_ci95_low": round(max(0, interval_center - interval_radius), 8),
         "simulation_ci95_high": round(min(1, interval_center + interval_radius), 8),

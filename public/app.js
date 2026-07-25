@@ -81,6 +81,10 @@ function probabilityLabel(value) {
   return probability.toFixed(4);
 }
 
+function decimalProbabilityLabel(value) {
+  return Number(value || 0).toFixed(15);
+}
+
 function percentLabel(value) {
   return `${(Number(value || 0) * 100).toFixed(Number(value || 0) < 0.001 ? 4 : 2)}%`;
 }
@@ -500,7 +504,7 @@ function renderCoinMetrics() {
   setHtml("#coin-metrics", [
     metric("Heads in one run", fmt(state.coin.single_heads), `${state.coin.single_tails.toLocaleString()} tails`),
     metric("Simulation probability", probabilityLabel(state.coin.simulation_probability), `${state.coin.simulation_successes.toLocaleString()} hits`),
-    metric("CLT probability", probabilityLabel(state.coin.clt_probability), percentLabel(state.coin.clt_probability)),
+    metric("Exact probability", decimalProbabilityLabel(state.coin.exact_probability), percentLabel(state.coin.exact_probability)),
     metric("Continuity-corrected z", state.coin.z_score.toFixed(3), `threshold > ${state.coin.threshold.toLocaleString()}`),
   ].join(""));
 }
@@ -566,10 +570,11 @@ function renderCoinComparison() {
   drawAxes(svg, box, 0, 4);
   if (!state.coin) return;
   const values = [
+    ["Exact", state.coin.exact_probability, "#2868c7"],
     ["CLT", state.coin.clt_probability, "#744db4"],
     ["Simulation", state.coin.simulation_probability, "#15835b"],
   ];
-  const max = Math.max(...values.map((item) => item[1]), state.coin.clt_probability * 1.2, 0.000001);
+  const max = Math.max(...values.map((item) => item[1]), state.coin.exact_probability * 1.2, 0.000001);
   const baseline = box.height - box.bottom;
   const groupWidth = (box.width - box.left - box.right) / values.length;
   values.forEach(([label, value, color], index) => {
@@ -590,7 +595,7 @@ function renderCoinComparison() {
 
 function renderCoinTheory() {
   if (!state.coin) return;
-  const result = percentLabel(state.coin.clt_probability);
+  const exactResult = percentLabel(state.coin.exact_probability);
   const rarityNote = state.coin.expected_successes < 10
     ? `At this experiment count, the CLT expects only ${state.coin.expected_successes.toFixed(2)} threshold hits, so the empirical probability will be noisy.`
     : `The CLT expects about ${state.coin.expected_successes.toLocaleString()} threshold hits at this experiment count.`;
@@ -600,9 +605,10 @@ function renderCoinTheory() {
       <span>mu = np = ${state.coin.theoretical_mean.toLocaleString()}</span>
       <span>sigma = sqrt(npq) = ${state.coin.theoretical_std_dev.toFixed(2)}</span>
       <span>z = (${state.coin.threshold.toLocaleString()} + 0.5 - mu) / sigma = ${state.coin.z_score.toFixed(3)}</span>
-      <strong>P(X &gt; ${state.coin.threshold.toLocaleString()}) ≈ P(Z &gt; ${state.coin.z_score.toFixed(3)}) = ${probabilityLabel(state.coin.clt_probability)}</strong>
+      <strong>Exact P(X &gt; ${state.coin.threshold.toLocaleString()}) = ${decimalProbabilityLabel(state.coin.exact_probability)}</strong>
+      <span>CLT approximation = ${decimalProbabilityLabel(state.coin.clt_probability)} (absolute error ${decimalProbabilityLabel(state.coin.clt_absolute_error)})</span>
     </div>
-    <p class="theory-note">The CLT predicts a ${result} tail. The simulation estimates the same tail by repeating the ${state.coin.flips.toLocaleString()}-flip experiment ${state.coin.experiments.toLocaleString()} times. ${rarityNote}</p>
+    <p class="theory-note">The exact binomial calculation predicts a ${exactResult} tail. The simulation estimates the same tail by repeating the ${state.coin.flips.toLocaleString()}-flip experiment ${state.coin.experiments.toLocaleString()} times. ${rarityNote}</p>
   `);
 }
 
@@ -611,7 +617,8 @@ function renderCoinReadout() {
   setHtml("#coin-readout", [
     `<div class="topic-item"><div><strong>${state.coin.sample_mean.toLocaleString()}</strong><span>Simulated mean heads</span></div><span class="tag blue">theory ${state.coin.theoretical_mean.toLocaleString()}</span></div>`,
     `<div class="topic-item"><div><strong>${state.coin.sample_std_dev.toFixed(2)}</strong><span>Simulated standard deviation</span></div><span class="tag green">theory ${state.coin.theoretical_std_dev.toFixed(2)}</span></div>`,
-    `<div class="topic-item"><div><strong>${state.coin.expected_successes.toFixed(2)}</strong><span>Expected hits from CLT</span></div><span class="tag violet">of ${state.coin.experiments.toLocaleString()}</span></div>`,
+    `<div class="topic-item"><div><strong>${decimalProbabilityLabel(state.coin.exact_probability)}</strong><span>Exact binomial probability</span></div><span class="tag blue">reference</span></div>`,
+    `<div class="topic-item"><div><strong>${state.coin.expected_successes.toFixed(2)}</strong><span>Expected hits from exact value</span></div><span class="tag violet">of ${state.coin.experiments.toLocaleString()}</span></div>`,
     `<div class="topic-item"><div><strong>${probabilityLabel(state.coin.simulation_ci95_low)}–${probabilityLabel(state.coin.simulation_ci95_high)}</strong><span>Simulation 95% interval</span></div><span class="tag amber">${state.coin.simulation_successes.toLocaleString()} hits</span></div>`,
   ].join(""));
 }
