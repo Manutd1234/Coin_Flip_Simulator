@@ -3,266 +3,90 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <title>Football Analytics Lab</title>
+    <title>Coin Flip Simulator</title>
     <link rel="stylesheet" href="/styles.css" />
   </head>
   <body>
     <main class="app-shell">
-      <section class="topbar">
+      <header class="topbar">
         <div>
-          <p class="eyebrow">Football Analytics Lab</p>
-          <h1>Player styles and match sentiment in one dashboard</h1>
+          <p class="eyebrow">Probability Lab</p>
+          <h1>Coin Flip Simulator</h1>
+          <p class="lede">Explore how simulation, the central limit theorem, and exact probability agree.</p>
         </div>
-        <div class="status-pill" id="dashboard-status">
-          <span class="pulse"></span>
-          Checking data sources
-        </div>
+        <div class="status-pill"><span class="pulse"></span>Local simulation ready</div>
+      </header>
+
+      <section class="control-row" aria-label="Simulation controls">
+        <label>
+          Flips per experiment
+          <input id="coin-flips" type="number" min="100" max="50000" step="100" value="10000" />
+        </label>
+        <label>
+          Monte Carlo experiments
+          <input id="coin-experiments" type="number" min="1000" max="30000" step="1000" value="12000" />
+        </label>
+        <label>
+          Heads threshold
+          <input id="coin-threshold" type="number" min="0" max="50000" step="1" value="5200" />
+        </label>
+        <button class="primary-button" id="coin-run" type="button">Run simulation</button>
       </section>
 
-      <nav class="tabs" aria-label="Project tabs">
-        <button class="tab active" type="button" data-tab="players">Player Performance</button>
-        <button class="tab" type="button" data-tab="sentiment">World Cup Sentiment</button>
-        <button class="tab" type="button" data-tab="coin">Coin Flip Lab</button>
-      </nav>
+      <section class="metric-grid" id="coin-metrics" aria-live="polite"></section>
 
-      <section class="tab-panel active" id="players-panel">
-        <div class="control-row">
-          <label>
-            Search player
-            <input id="player-search" type="search" placeholder="Name, club, league, position" />
-          </label>
-          <label>
-            Focus player
-            <select id="player-focus"></select>
-          </label>
-          <label>
-            Position
-            <select id="position-filter"></select>
-          </label>
-          <label>
-            Style cluster
-            <select id="style-filter"></select>
-          </label>
-        </div>
-
-        <section class="metric-grid" id="player-metrics"></section>
-
-        <section class="grid two">
-          <article class="panel profile-panel">
-            <div class="panel-heading">
-              <div>
-                <h2>Player Profile</h2>
-                <p>Transfermarkt-style identity, value, role, and availability.</p>
-              </div>
-            </div>
-            <div id="player-profile"></div>
-          </article>
-
-          <article class="panel">
-            <div class="panel-heading">
-              <div>
-                <h2>Role Attributes</h2>
-                <p>Normalized attacking, creative, discipline, value, and workload signals.</p>
-              </div>
-            </div>
-            <div class="attribute-list" id="attribute-list"></div>
-          </article>
-        </section>
-
-        <section class="grid two">
-          <article class="panel">
-            <div class="panel-heading">
-              <div>
-                <h2>Playing Style Clusters</h2>
-                <p>KMeans-style groups using per-90 output, minutes, cards, and value.</p>
-              </div>
-            </div>
-            <svg class="chart tall" id="cluster-chart" role="img" aria-label="Player cluster scatter plot"></svg>
-          </article>
-
-          <article class="panel">
-            <div class="panel-heading">
-              <div>
-                <h2>Top Player Output</h2>
-                <p>Goal contributions and market value by selected players.</p>
-              </div>
-            </div>
-            <svg class="chart tall" id="player-bars" role="img" aria-label="Player bar chart"></svg>
-          </article>
-        </section>
-
-        <section class="panel">
+      <section class="grid two">
+        <article class="panel">
           <div class="panel-heading">
             <div>
-              <h2>Player Table</h2>
-              <p>Filtered player profiles with computed performance metrics.</p>
+              <h2>One Flip Run</h2>
+              <p>Observed heads and tails from the latest experiment.</p>
             </div>
           </div>
-          <div class="table-wrap">
-            <table>
-              <thead>
-                <tr>
-                  <th>Player</th>
-                  <th>Club</th>
-                  <th>Position</th>
-                  <th>Style</th>
-                  <th>G/90</th>
-                  <th>A/90</th>
-                  <th>Cards/90</th>
-                  <th>Value</th>
-                </tr>
-              </thead>
-              <tbody id="player-table"></tbody>
-            </table>
+          <svg class="chart tall" id="coin-outcome-chart" role="img" aria-label="Heads and tails from one coin flip run"></svg>
+        </article>
+
+        <article class="panel">
+          <div class="panel-heading">
+            <div>
+              <h2>Exact Binomial + CLT</h2>
+              <p>The exact tail is the reference value; the CLT is an approximation.</p>
+            </div>
           </div>
-        </section>
+          <div id="coin-formula"></div>
+        </article>
       </section>
 
-      <section class="tab-panel" id="sentiment-panel">
-        <div class="control-row">
-          <label>
-            Match query
-            <input id="match-query" value='("Team A" OR "Team B" OR #WorldCup) lang:en -is:retweet' />
-          </label>
-          <label>
-            Window
-            <select id="sentiment-window">
-              <option value="full">Full match</option>
-              <option value="live">Live so far</option>
-              <option value="last15">Last 15 minutes</option>
-            </select>
-          </label>
-        </div>
-
-        <section class="metric-grid" id="sentiment-metrics"></section>
-
-        <section class="grid two">
-          <article class="panel">
-            <div class="panel-heading">
-              <div>
-                <h2>Sentiment Over Time</h2>
-                <p>Positive, neutral, and negative share with match events annotated.</p>
-              </div>
-            </div>
-            <svg class="chart tall" id="sentiment-lines" role="img" aria-label="Sentiment line chart"></svg>
-          </article>
-
-          <article class="panel">
-            <div class="panel-heading">
-              <div>
-                <h2>Post Volume</h2>
-                <p>Minute-by-minute volume spikes during key match moments.</p>
-              </div>
-            </div>
-            <svg class="chart tall" id="volume-bars" role="img" aria-label="Post volume chart"></svg>
-          </article>
-        </section>
-
-        <section class="grid two">
-          <article class="panel">
-            <div class="panel-heading">
-              <div>
-                <h2>Event Impact</h2>
-                <p>Sentiment swing around goals, VAR, halftime, and fulltime.</p>
-              </div>
-            </div>
-            <div class="event-list" id="event-list"></div>
-          </article>
-
-          <article class="panel">
-            <div class="panel-heading">
-              <div>
-                <h2>Likes vs Time</h2>
-                <p>Individual posts colored by model sentiment, like the reference scatter.</p>
-              </div>
-            </div>
-            <svg class="chart tall" id="sentiment-scatter" role="img" aria-label="Likes by post time scatter chart"></svg>
-          </article>
-        </section>
-
-        <section class="panel">
+      <section class="grid two">
+        <article class="panel">
           <div class="panel-heading">
             <div>
-              <h2>Live Topic Pulse</h2>
-              <p>Top hashtag, player mentions, query, and active model source.</p>
+              <h2>Distribution of Heads</h2>
+              <p>Heads counts across repeated experiments, with the threshold marked.</p>
             </div>
           </div>
-          <div class="topic-grid" id="topic-grid"></div>
-        </section>
+          <svg class="chart tall" id="coin-distribution-chart" role="img" aria-label="Distribution of heads across simulated experiments"></svg>
+        </article>
+
+        <article class="panel">
+          <div class="panel-heading">
+            <div>
+              <h2>Probability Comparison</h2>
+              <p>Exact probability, CLT approximation, and Monte Carlo estimate.</p>
+            </div>
+          </div>
+          <svg class="chart tall" id="coin-comparison-chart" role="img" aria-label="Exact probability compared with CLT and simulation"></svg>
+        </article>
       </section>
 
-      <section class="tab-panel" id="coin-panel">
-        <div class="control-row coin-controls">
-          <label>
-            Flips per experiment
-            <input id="coin-flips" type="number" min="100" max="50000" step="100" value="10000" />
-          </label>
-          <label>
-            Monte Carlo experiments
-            <input id="coin-experiments" type="number" min="1000" max="30000" step="1000" value="12000" />
-          </label>
-          <label>
-            Heads threshold
-            <input id="coin-threshold" type="number" min="0" max="50000" step="1" value="5200" />
-          </label>
-          <button class="primary-button" id="coin-run" type="button">Run simulation</button>
-        </div>
-
-        <section class="metric-grid" id="coin-metrics"></section>
-
-        <section class="grid two">
-          <article class="panel">
-            <div class="panel-heading">
-              <div>
-                <h2>One 10,000-Flip Run</h2>
-                <p>Observed heads and tails from the latest experiment.</p>
-              </div>
-            </div>
-            <svg class="chart tall" id="coin-outcome-chart" role="img" aria-label="Heads and tails from one coin flip run"></svg>
-          </article>
-
-          <article class="panel coin-theory" id="coin-theory">
-            <div class="panel-heading">
-              <div>
-                <h2>Exact Binomial + CLT</h2>
-                <p>The exact tail is primary; the CLT is shown as an approximation.</p>
-              </div>
-            </div>
-            <div id="coin-formula"></div>
-          </article>
-        </section>
-
-        <section class="grid two">
-          <article class="panel">
-            <div class="panel-heading">
-              <div>
-                <h2>Distribution of Heads</h2>
-                <p>Counts across repeated experiments, with the threshold marked.</p>
-              </div>
-            </div>
-            <svg class="chart tall" id="coin-distribution-chart" role="img" aria-label="Distribution of heads across simulated experiments"></svg>
-          </article>
-
-          <article class="panel">
-            <div class="panel-heading">
-              <div>
-                <h2>Theory vs Simulation</h2>
-                <p>Exact probability, CLT approximation, and Monte Carlo estimate.</p>
-              </div>
-            </div>
-            <svg class="chart tall" id="coin-comparison-chart" role="img" aria-label="Central limit theorem compared with simulation probability"></svg>
-          </article>
-        </section>
-
-        <section class="panel">
-          <div class="panel-heading">
-            <div>
-              <h2>Experiment Readout</h2>
-              <p>Compare the simulated sample mean and spread with the theoretical binomial values.</p>
-            </div>
+      <section class="panel">
+        <div class="panel-heading">
+          <div>
+            <h2>Experiment Readout</h2>
+            <p>Compare the simulated distribution with its theoretical mean and spread.</p>
           </div>
-          <div class="topic-grid" id="coin-readout"></div>
-        </section>
+        </div>
+        <div class="readout-grid" id="coin-readout"></div>
       </section>
     </main>
     <script src="/app.js"></script>
